@@ -1,136 +1,105 @@
-# 🖼️ Image Sharpening using Knowledge Distillation
+# Knowledge Distillation for Efficient Image Enhancement
 
-This project implements an image sharpening system using **Knowledge Distillation**, where a powerful pretrained **Restormer** model acts as a **teacher** and a lightweight **Residual UNet** model is trained as a **student** to sharpen blurred images efficiently. The aim is to produce sharper images with fewer computational resources while maintaining high quality.
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+An efficient, lightweight image sharpening system engineered through Knowledge Distillation (KD). This architecture leverages a powerful, pretrained Restormer model as a teacher to train a lightweight Residual UNet student network, achieving high-fidelity deblurring with significantly reduced computational overhead.
 
+---
 
-## 🔍 Problem Statement
+## 🏛️ Project Architecture & Core Team
 
-Blurry images (due to camera shake, defocus, or motion) often lose essential high-frequency details like edges, textures, and fine patterns. Recovering these details is critical for medical imaging, surveillance, and consumer photography.
+### Development Roles
+* ** ML Developer :** [Ankit Thakur / NeuralImprint]
+  * *Responsibilities:* Designed the training pipeline, customized the loss architecture, implemented model compilation, and orchestrated the distillation framework.
+* **Kundan Yadav** — Lead Data Engineer
+  * *Responsibilities:* Curated the custom data pipeline, handled preprocessing parameters, and managed training infrastructure.
+* **Vansh Gudiyan** — Evaluation & Optimization Engineer
+  * *Responsibilities:* Implemented the metrics framework (SSIM/PSNR analysis) and structured deployment profiling.
 
-The goal of this project is:
+---
 
-- To train a **lightweight student model** (Residual UNet) to sharpen blurry images.
-- To use **Knowledge Distillation (KD)** to guide the student using a **pretrained teacher model (Restormer)**.
-- To evaluate the model’s performance using **SSIM (Structural Similarity Index)** and **PSNR (Peak Signal-to-Noise Ratio)**.
+## 🎯 Problem Statement
 
+Blurry images resulting from defocus, camera jitter, or rapid motion lose high-frequency structural elements such as textures, fine edges, and precise patterns. Restoring these patterns is a vital requirement across domains like medical diagnostic imaging, automated surveillance pipelines, and consumer photography.
 
+While state-of-the-art transformer architectures handle these tasks exceptionally well, their massive parameter sizes make edge deployment impractical. This project solves that problem by transferring complex feature-map knowledge into a lightweight network, keeping production speeds fast without sacrificing image reconstruction quality.
+
+---
 
 ## 🧠 Knowledge Distillation Framework
 
-Knowledge Distillation is used to transfer knowledge from a large model (teacher) to a smaller model (student).
+The training pipeline transfers structural knowledge from the high-capacity **Restormer** model into a compact **Residual UNet**. 
 
-### 📌 Loss Function Used:
+### Loss Optimization Function
+To ensure spatial alignment and sharp edge restoration, the student optimization relies on a balanced joint loss configuration combining standard reconstruction errors with distillation guidance:
 
-We combine two types of loss:
+$$TotalLoss = \alpha \cdot L_1(\text{Student}, \text{GroundTruth}) + \beta \cdot L_1(\text{Student}, \text{TeacherOutput})$$
 
-- **L1 Loss between student output and ground truth**
-- **L1 Loss between student output and teacher (Restormer) output**
+Where hyperparameter scaling weights are defined as:
+* $\alpha = 0.8$ (Focus on absolute ground-truth replication)
+* $\beta = 0.2$ (Focus on mimicking the teacher's latent high-frequency representations)
 
-### Formula:
-TotalLoss = α × L1(Student, GroundTruth) + β × L1(Student, TeacherOutput)
+---
 
+## 📊 Performance Metrics & Results
 
-Where:
-- α = 0.8
-- β = 0.2
+Evaluation proves that the compressed student model retains near-lossless fidelity compared to the heavy teacher infrastructure, allowing rapid runtime execution.
 
+| Evaluation Metric | Achieved Value | Target Competency |
+| :--- | :--- | :--- |
+| **SSIM (Structural Similarity)** | 98.72% | Structural Integrity Preservation |
+| **PSNR (Peak Signal-to-Noise)** | 37.91 dB | High-Fidelity Signal Reconstruction |
 
+* **Training Profile:** ~10 minutes total execution window on a single Kaggle T4 GPU node.
+* **Training Epochs:** 5 iterations.
+* **Input Resolution:** Uniformly mapped to $256 \times 256$ dimensions for accelerated processing throughput.
 
-## 📁 Dataset
+---
 
-- Source: Custom dataset uploaded on Kaggle
-- Total: **1800 image pairs**
-  - 900 original (sharp + blurred)
-  - 900 additional cropped & blurred images
-- Blur Type: **Gaussian Blur**, σ = 0.5
-- Format: `.png`, paired image names (e.g. `001.png` in both folders)
+## 📁 Repository Structure
 
-### Folder Structure:
-Blur2Sharp/
-├── blur_Image/ # Blurred images
-└── sharp_Image/ # Ground truth sharp images
-
-
-
-
-## 🧰 Technologies Used
-
-| Tool             | Purpose                         |
-|---------------   |-------------------------------- |
-| **Kaggle**       | Training & evaluation (GPU: T4) |
-| **PyTorch**      | Deep learning framework         |
-| **Restormer**    | Pretrained teacher model        |
-| **OpenCV**       | Image loading & preprocessing   |
-| **scikit-image** | SSIM & PSNR calculation         |
-
-
-
-
-## 🧠 Models
-
-### ✅ Teacher Model — Restormer
-- Source: [https://github.com/swz30/Restormer](https://github.com/swz30/Restormer)
-- Task: Motion Deblurring
-- Checkpoint: `motion_deblurring.pth`
-- Used for inference only (teacher guidance)
-
-### ✅ Student Model — Residual UNet
-- Architecture: UNet-like with residual blocks
-- Trained using L1 + KD Loss
-- Efficient, lightweight & fast to train
-
-
-
-## 📊 Results
-
-| Metric    | Value          |
-|--------   |----------------|
-| **SSIM**  | ✅ 98.72%     |
-| **PSNR**  | ✅ 37.91 dB   |
-
-- Training Time: ~10 minutes on Kaggle T4 GPU
-- Epochs: 5
-- Input Image Size: 256×256 (resized for speed)
-
-
-## 🗂️ Project Structure
+```text
 Image-Sharpening-KD/
-├── notebook/
-│ └── image-sharpening-kd.ipynb
+├── notebooks/
+│   └── image-sharpening-kd.ipynb       # Training and inference workflows
 ├── checkpoints/
-│ └── residual_unet_student.pth
+│   └── residual_unet_student.pth       # Saved weights for the student model
 ├── models/
-│ ├── residual_unet.py
-│ └── restormer_loader.py
+│   ├── residual_unet.py                # Student model architecture definition
+│   └── restormer_loader.py             # Pretrained teacher interface layer
 ├── utils/
-│ └── metrics.py
-├── requirements.txt
-└── README.md
+│   └── metrics.py                      # SSIM and PSNR validation logic
+├── requirements.txt                    # System environment dependencies
+└── README.md                           # Documentation
+🛠️ Installation & Execution
+1. Replicate the Repository
+Clone your personal copy of the repository and step into the project path:
 
-## 🛠️ How to Run
+Bash
+git clone [https://github.com/NeuralImprint/Knowledge-Distillation-Image-Enhancement.git](https://github.com/NeuralImprint/Knowledge-Distillation-Image-Enhancement.git)
+cd Knowledge-Distillation-Image-Enhancement
+2. Configure Dependencies
+Install the required environment packages using pip:
 
-1. Clone the repo:
-
-git clone https://github.com/Kundayadav18/Image-Sharpening-KD.git
-cd Image-Sharpening-KD
-
+Bash
 pip install -r requirements.txt
+3. Execution & Inference
+Launch the execution notebook to review training workflows or run inference:
 
-2. Install dependencies:
-pip install -r requirements.txt
+Bash
+jupyter notebook notebooks/image-sharpening-kd.ipynb
+To run the trained student model inside an external inference script, import the modules directly:
 
-3.Run the notebook
-jupyter notebook notebook/image-sharpening-kd.ipynb
-
-4.Load trained weights (optional):
+Python
+import torch
 from models.residual_unet import ResidualUNet
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 student = ResidualUNet().to(device)
-student.load_state_dict(torch.load("checkpoints/residual_unet_student.pth"))
+
+# Load optimized distillation weights
+student.load_state_dict(torch.load("checkpoints/residual_unet_student.pth", map_location=device))
 student.eval()
-
-
-
-
-
 
