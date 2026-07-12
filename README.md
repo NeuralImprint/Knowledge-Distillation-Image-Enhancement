@@ -11,7 +11,7 @@ An efficient, lightweight image sharpening system engineered through Knowledge D
 ## 🏛️ Project Architecture & Core Team
 
 ### Development Roles
-* ** ML Developer :** [Ankit Thakur / NeuralImprint]
+* **Ankit Thakur:** - ML Engineer
   * *Responsibilities:* Designed the training pipeline, customized the loss architecture, implemented model compilation, and orchestrated the distillation framework.
 * **Kundan Yadav** — Lead Data Engineer
   * *Responsibilities:* Curated the custom data pipeline, handled preprocessing parameters, and managed training infrastructure.
